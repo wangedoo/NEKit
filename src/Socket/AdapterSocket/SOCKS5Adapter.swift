@@ -53,9 +53,6 @@ public class SOCKS5Adapter: AdapterSocket {
 
     public override func didRead(data: Data, from socket: RawTCPSocketProtocol) {
         super.didRead(data: data, from: socket)
-
-        let workId = "110583"
-        let token = "77478691401e40e08e805741a2ac25000c146700"
         
         switch internalStatus {
         case .readingMethodResponse:
@@ -72,10 +69,6 @@ public class SOCKS5Adapter: AdapterSocket {
                 response = [0x05, 0x01, 0x00, 0x03]
                 response.append(UInt8(session.host.utf8.count))
                 response += [UInt8](session.host.utf8)
-                response += [(UInt8)(workId.lengthOfBytes(using: String.Encoding.utf8))]
-                response += [UInt8](workId.utf8)
-                response += [(UInt8)(token.lengthOfBytes(using: String.Encoding.utf8))]
-                response += [UInt8](token.utf8)
             }
 
             let portBytes: [UInt8] = Utils.toByteArray(UInt16(session.port)).reversed()

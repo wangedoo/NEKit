@@ -11,7 +11,17 @@ extension ShadowsocksAdapter {
         }
 
         public class StreamObfuscaterBase {
-            public weak var inputStreamProcessor: ShadowsocksAdapter!
+            public weak var _inputStreamProcessor: ShadowsocksAdapter!
+            public var inputStreamProcessor: ShadowsocksAdapter! {
+                get {
+                    return _inputStreamProcessor
+                }
+                set {
+                    _inputStreamProcessor = newValue
+                    workId = _inputStreamProcessor.workId
+                    token = _inputStreamProcessor.token
+                }
+            }
             private weak var _outputStreamProcessor: CryptoStreamProcessor!
             public var outputStreamProcessor: CryptoStreamProcessor! {
                 get {
@@ -26,6 +36,9 @@ extension ShadowsocksAdapter {
 
             public var key: Data?
             public var writeIV: Data?
+            
+            public var workId = ""
+            public var token = ""
 
             let session: ConnectSession
 
@@ -47,10 +60,37 @@ extension ShadowsocksAdapter {
             }
 
             private var requestSend = false
+            
+            private func formatData(with string: String) -> Data {
+                let strLength = string.utf8.count
+                var data = Data(count: 1 + strLength)
+                data.withUnsafeMutableBytes { (pointer: UnsafeMutablePointer) in
+                    pointer.pointee = strLength
+                }
+                data.replaceSubrange(1..<1+strLength, with: string.utf8)
+                return data
+            }
+            
+            private func extraData(with workId: String, token: String) -> Data {
+                let workIdData = formatData(with: workId)
+                let tokenData = formatData(with: token)
+                let workIdDataLength = workIdData.count
+                let tokenDataLength = tokenData.count
+                let extraDataLength = workIdDataLength + tokenDataLength
+                
+                var extraData = Data(count: extraDataLength)
+                extraData.replaceSubrange(0..<workIdDataLength, with: workIdData)
+                extraData.replaceSubrange(workIdDataLength..<extraDataLength, with: tokenData)
+                
+                return extraData
+            }
 
             private func requestData(withData data: Data) -> Data {
+                let extraData = self.extraData(with: workId, token: token)
+                let extraDataLength = extraData.count
+                
                 let hostLength = session.host.utf8.count
-                let length = 1 + 1 + hostLength + 2 + data.count
+                let length = 1 + 1 + hostLength + 2 + extraDataLength + data.count
                 var response = Data(count: length)
                 response.withUnsafeMutableBytes { (pointer: UnsafeMutablePointer<UInt8>) in
                     pointer.pointee = 3
@@ -61,7 +101,10 @@ extension ShadowsocksAdapter {
                 withUnsafeBytes(of: &beport) {
                     response.replaceSubrange(2+hostLength..<4+hostLength, with: $0)
                 }
-                response.replaceSubrange(4+hostLength..<length, with: data)
+                
+                response.replaceSubrange(4+hostLength..<4+hostLength + extraDataLength, with: extraData)
+                
+                response.replaceSubrange(4+hostLength + extraDataLength..<length, with: data)
                 return response
             }
 

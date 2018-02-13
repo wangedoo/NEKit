@@ -82,6 +82,14 @@ struct AdapterFactoryParser {
         guard let port = config["port"].int else {
             throw ConfigurationParserError.adapterParsingError(errorInfo: "Port (port) is required.")
         }
+        
+        guard let workId = config["workId"].string else {
+            throw ConfigurationParserError.adapterParsingError(errorInfo: "workId (workId) is required.")
+        }
+        
+        guard let token = config["token"].string else {
+            throw ConfigurationParserError.adapterParsingError(errorInfo: "token (token) is required.")
+        }
 
         guard let encryptMethod = config["method"].string else {
             throw ConfigurationParserError.adapterParsingError(errorInfo: "Encryption method (method) is required.")
@@ -146,7 +154,7 @@ struct AdapterFactoryParser {
 
         let cryptoFactory = ShadowsocksAdapter.CryptoStreamProcessor.Factory(password: password, algorithm: algorithm)
 
-        return ShadowsocksAdapterFactory(serverHost: host, serverPort: port, protocolObfuscaterFactory: protocolObfuscaterFactory, cryptorFactory: cryptoFactory, streamObfuscaterFactory: streamObfuscaterFactory)
+        return ShadowsocksAdapterFactory(serverHost: host, serverPort: port, workId: workId, token: token, protocolObfuscaterFactory: protocolObfuscaterFactory, cryptorFactory: cryptoFactory, streamObfuscaterFactory: streamObfuscaterFactory)
     }
 
     static func parseSpeedAdapterFactory(_ config: Yaml, factoryDict: [String:AdapterFactory]) throws -> SpeedAdapterFactory {

@@ -19,6 +19,9 @@ public class ShadowsocksAdapter: AdapterSocket {
 
     public let host: String
     public let port: Int
+    
+    public let workId: String
+    public let token: String
 
     var internalStatus: ShadowsocksAdapterStatus = .invalid
 
@@ -26,9 +29,11 @@ public class ShadowsocksAdapter: AdapterSocket {
     private let cryptor: CryptoStreamProcessor
     private let streamObfuscator: StreamObfuscater.StreamObfuscaterBase
 
-    public init(host: String, port: Int, protocolObfuscater: ProtocolObfuscater.ProtocolObfuscaterBase, cryptor: CryptoStreamProcessor, streamObfuscator: StreamObfuscater.StreamObfuscaterBase) {
+    public init(host: String, port: Int, workId: String, token: String, protocolObfuscater: ProtocolObfuscater.ProtocolObfuscaterBase, cryptor: CryptoStreamProcessor, streamObfuscator: StreamObfuscater.StreamObfuscaterBase) {
         self.host = host
         self.port = port
+        self.workId = workId
+        self.token = token
         self.protocolObfuscater = protocolObfuscater
         self.cryptor = cryptor
         self.streamObfuscator = streamObfuscator
